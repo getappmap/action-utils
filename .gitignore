@@ -1,0 +1,11 @@
+# You know why
+node_modules
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary build output
+build
+tmp
+
+# AppMap archives and working files
+/.appmap
