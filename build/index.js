@@ -26,3 +26,4 @@ Object.defineProperty(exports, "executeCommand", { enumerable: true, get: functi
 __exportStar(require("./executeCommand"), exports);
 var verbose_1 = require("./verbose");
 Object.defineProperty(exports, "verbose", { enumerable: true, get: function () { return __importDefault(verbose_1).default; } });
+__exportStar(require("./waitFor"), exports);
