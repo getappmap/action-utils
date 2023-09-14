@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "author": "AppLand, Inc",
   "license": "MIT",
-  "main": "build/index.ts",
+  "main": "build/index.js",
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
