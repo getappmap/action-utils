@@ -60,6 +60,10 @@ export default async function executeCommand(
     });
   }
   return new Promise<string>((resolve, reject) => {
+    command.on('error', (err: Error) => {
+      log(LogLevel.Warn, `Command "${commandString}" could not be executed: ${err}`);
+      reject(err);
+    });
     command.on('close', (code, signal) => {
       if (signal || (code !== null && allowedCodes.includes(code))) {
         if (signal)

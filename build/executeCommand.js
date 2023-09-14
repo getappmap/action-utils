@@ -88,6 +88,10 @@ function executeCommand(cmd, options = new ExecuteOptions()) {
             });
         }
         return new Promise((resolve, reject) => {
+            command.on('error', (err) => {
+                (0, log_1.default)(log_1.LogLevel.Warn, `Command "${commandString}" could not be executed: ${err}`);
+                reject(err);
+            });
             command.on('close', (code, signal) => {
                 if (signal || (code !== null && allowedCodes.includes(code))) {
                     if (signal)
