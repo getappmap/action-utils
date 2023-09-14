@@ -4,7 +4,7 @@ import verbose from './verbose';
 import assert from 'assert';
 
 export type Command = {
-  cmd: string;
+  cmd: string | string[];
   options?: ExecOptions;
 };
 
@@ -26,15 +26,20 @@ export default async function executeCommand(
   cmd: string | Command,
   options: ExecuteOptionFlags = new ExecuteOptions()
 ): Promise<string> {
-  function commandArgs(cmdStr: string): [string, string[]] {
-    const args = cmdStr.split(' ');
+  function commandArgs(providedCommand: string | string[]): [string, string[]] {
+    let args: string[];
+    if (Array.isArray(providedCommand)) {
+      args = providedCommand;
+    } else {
+      args = providedCommand.split(' ');
+    }
     const cmd = args.shift();
     assert(cmd);
     return [cmd, args];
   }
 
   let command: ChildProcess;
-  let commandString: string;
+  let commandString: string | string[];
   const allowedCodes = options.allowedCodes || [0];
   if (typeof cmd === 'string') {
     commandString = cmd;

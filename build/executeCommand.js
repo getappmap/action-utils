@@ -51,8 +51,14 @@ class ExecuteOptions {
 exports.ExecuteOptions = ExecuteOptions;
 function executeCommand(cmd, options = new ExecuteOptions()) {
     return __awaiter(this, void 0, void 0, function* () {
-        function commandArgs(cmdStr) {
-            const args = cmdStr.split(' ');
+        function commandArgs(providedCommand) {
+            let args;
+            if (Array.isArray(providedCommand)) {
+                args = providedCommand;
+            }
+            else {
+                args = providedCommand.split(' ');
+            }
             const cmd = args.shift();
             (0, assert_1.default)(cmd);
             return [cmd, args];
