@@ -1,0 +1,74 @@
+name: Main
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 0'
+
+env:
+  APPMAP_TELEMETRY_DISABLED: 'true'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependency libraries
+        run: yarn install
+
+      - name: Install and configure AppMap
+        id: appmap-install
+        uses: getappmap/install-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          expected-appmap-dir: tmp/appmap
+          project-type: yarn
+          verbose: true
+
+      - name: Commit AppMap configuration changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: .
+          message: 'chore: Update AppMap installation'
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        id: test
+        run: yarn appmap
+
+      - name: Save AppMaps
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ${{ steps.appmap-install.outputs.appmap-dir }}
+          key: appmaps-${{ github.sha }}-${{ github.run_attempt }}
+
+      - name: Commit changes
+        if: github.event_name == 'pull_request'
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: dist
+          message: 'chore: Packaged distribution of action-utils'
+
+      - name: Tag @v1
+        uses: rickstaa/action-create-tag@v1
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          tag: v1
+          force_push_tag: true
+
+  appmap-analysis:
+    if: always()
+    needs: [test]
+    uses: getappmap/analyze-action/.github/workflows/appmap-analysis.yml@v1
+    permissions:
+      actions: read
+      contents: read
+      checks: write
+      pull-requests: write
