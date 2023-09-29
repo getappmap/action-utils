@@ -57,7 +57,7 @@ describe('locateToolsRelease', () => {
     fetcher.mockResolvedValueOnce({
       status: 403,
       json: async () => ({
-        message: 'Rate limit exceeded'
+        message: 'Rate limit exceeded',
       }),
     } as fetch.Response);
     fetcher.mockResolvedValueOnce({

@@ -30,7 +30,7 @@ var LogLevel;
     LogLevel["Debug"] = "debug";
     LogLevel["Info"] = "info";
     LogLevel["Warn"] = "warn";
-})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
+})(LogLevel || (exports.LogLevel = LogLevel = {}));
 class ActionLogger {
     debug(message) {
         core.debug(message);
