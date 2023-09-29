@@ -54,7 +54,8 @@ function installAppMapTools(toolsPath, options = {}) {
         if (!toolsReleaseURL)
             throw new Error('Could not find @appland/appmap release');
         (0, log_1.default)(log_1.LogLevel.Info, `Installing AppMap tools from ${toolsReleaseURL}`);
-        const appmapTempPath = (0, path_1.join)((0, os_1.tmpdir)(), 'appmap');
+        const tempDir = yield (0, promises_1.mkdtemp)((0, path_1.join)((0, os_1.tmpdir)(), 'appmap-tools-'));
+        const appmapTempPath = (0, path_1.join)(tempDir, 'appmap');
         yield (0, downloadFile_1.default)(new URL(toolsReleaseURL), appmapTempPath);
         try {
             yield (0, executeCommand_1.default)(`mv ${appmapTempPath} ${toolsPath}`);
@@ -63,6 +64,7 @@ function installAppMapTools(toolsPath, options = {}) {
             yield (0, executeCommand_1.default)(`sudo mv ${appmapTempPath} ${toolsPath}`);
         }
         yield (0, promises_1.chmod)(toolsPath, 0o755);
+        yield (0, promises_1.rm)(tempDir, { recursive: true });
         (0, log_1.default)(log_1.LogLevel.Info, `AppMap tools are installed at ${toolsPath}`);
     });
 }
