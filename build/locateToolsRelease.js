@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const log_1 = __importStar(require("./log"));
+const assert_1 = __importDefault(require("assert"));
 function locateToolsRelease(platform, githubToken, retryDelay = 3000) {
     return __awaiter(this, void 0, void 0, function* () {
         let result;
@@ -61,6 +62,7 @@ function locateToolsRelease(platform, githubToken, retryDelay = 3000) {
                     (0, log_1.default)(log_1.LogLevel.Warn, e.toString());
                     message = `GitHub API rate limit likely exceeded: ${e}`;
                 }
+                message || (message = `GitHub API rate limit likely exceeded`);
                 (0, log_1.default)(log_1.LogLevel.Info, [`Received status code 'Forbidden' listing appmap-js releases (`, message, ')'].join(''));
                 (0, log_1.default)(log_1.LogLevel.Debug, `Waiting for ${retryDelay / 1000.0} seconds.`);
                 (0, log_1.default)(log_1.LogLevel.Info, `You can avoid the rate limit by setting 'github-token: \${{ secrets.GITHUB_TOKEN }}'`);
@@ -70,14 +72,16 @@ function locateToolsRelease(platform, githubToken, retryDelay = 3000) {
             else if (response.status > 400) {
                 throw new Error(`GitHub API returned ${response.status} ${response.statusText}`);
             }
-            const releases = yield response.json();
+            const releases = (yield response.json());
             if (releases.length === 0)
                 break;
             page += 1;
             const release = releases.find((release) => /^@appland\/appmap-v\d+\./.test(release.name));
             if (release) {
                 (0, log_1.default)(log_1.LogLevel.Info, `Using @appland/appmap release ${release.name} for ${platform}`);
-                result = release.assets.find((asset) => asset.name === `appmap-${platform}`).browser_download_url;
+                const asset = release.assets.find(asset => asset.name === `appmap-${platform}`);
+                (0, assert_1.default)(asset);
+                result = asset.browser_download_url;
             }
         }
         return result;

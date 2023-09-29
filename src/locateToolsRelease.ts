@@ -1,5 +1,16 @@
 import fetch from 'node-fetch';
 import log, {LogLevel} from './log';
+import assert from 'assert';
+
+type ReleaseAsset = {
+  name: string;
+  browser_download_url: string;
+};
+
+type Release = {
+  name: string;
+  assets: ReleaseAsset[];
+};
 
 export default async function locateToolsRelease(
   platform: string,
@@ -21,11 +32,12 @@ export default async function locateToolsRelease(
     if (response.status === 403) {
       let message: string;
       try {
-        message = (await response.json()).message;
+        message = ((await response.json()) as any).message;
       } catch (e) {
         log(LogLevel.Warn, (e as Error).toString());
         message = `GitHub API rate limit likely exceeded: ${e}`;
       }
+      message ||= `GitHub API rate limit likely exceeded`;
       log(
         LogLevel.Info,
         [`Received status code 'Forbidden' listing appmap-js releases (`, message, ')'].join('')
@@ -41,17 +53,16 @@ export default async function locateToolsRelease(
       throw new Error(`GitHub API returned ${response.status} ${response.statusText}`);
     }
 
-    const releases = await response.json();
+    const releases = (await response.json()) as Release[];
     if (releases.length === 0) break;
 
     page += 1;
     const release = releases.find((release: any) => /^@appland\/appmap-v\d+\./.test(release.name));
-
     if (release) {
       log(LogLevel.Info, `Using @appland/appmap release ${release.name} for ${platform}`);
-      result = release.assets.find(
-        (asset: any) => asset.name === `appmap-${platform}`
-      ).browser_download_url;
+      const asset = release.assets.find(asset => asset.name === `appmap-${platform}`);
+      assert(asset);
+      result = asset.browser_download_url;
     }
   }
 

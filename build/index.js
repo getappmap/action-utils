@@ -17,7 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verbose = exports.executeCommand = exports.log = void 0;
+exports.downloadFile = exports.installAppMapTools = exports.verbose = exports.executeCommand = exports.log = void 0;
 var log_1 = require("./log");
 Object.defineProperty(exports, "log", { enumerable: true, get: function () { return __importDefault(log_1).default; } });
 __exportStar(require("./log"), exports);
@@ -27,3 +27,7 @@ __exportStar(require("./executeCommand"), exports);
 var verbose_1 = require("./verbose");
 Object.defineProperty(exports, "verbose", { enumerable: true, get: function () { return __importDefault(verbose_1).default; } });
 __exportStar(require("./waitFor"), exports);
+var installAppMapTools_1 = require("./installAppMapTools");
+Object.defineProperty(exports, "installAppMapTools", { enumerable: true, get: function () { return __importDefault(installAppMapTools_1).default; } });
+var downloadFile_1 = require("./downloadFile");
+Object.defineProperty(exports, "downloadFile", { enumerable: true, get: function () { return __importDefault(downloadFile_1).default; } });
