@@ -35,7 +35,8 @@ export function setLogger(logger: Logger) {
 export default function log(level: LogLevel, message: string) {
   if (!Logger) {
     if (message.endsWith('\n')) message = message.slice(0, -1);
-    console[level](message);
+    const logFunction = console[level] || console.warn;
+    logFunction(message);
     return;
   }
 
