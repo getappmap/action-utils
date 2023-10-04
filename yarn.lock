@@ -37,7 +37,7 @@
 
 "@appland/appmap-agent-js@^14.2.0":
   version "14.2.0"
-  resolved "https://registry.npmjs.org/@appland/appmap-agent-js/-/appmap-agent-js-14.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/@appland/appmap-agent-js/-/appmap-agent-js-14.2.0.tgz#154d31369f4baa83cb5f74ef1974ead928e62e18"
   integrity sha512-I2ro2Y4iZNFwrd4e7bO3GxhgBuCwgqsbMeui8BDZtiE3elc1hSHasCTx3Pa2B2ZJ9dgM5BXl4oCb/p8nn5nqnA==
   dependencies:
     "@appland/appmap-validate" "^2.3.0"
