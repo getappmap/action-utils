@@ -16,7 +16,7 @@ export default class Commenter {
     comment(commentFile: string): Promise<void>;
     getAppMapComment(): Promise<Comment | undefined>;
     static commentTagPattern(commentName: string): string;
-    static get repo(): Repo;
-    static get issueNumber(): number | undefined;
-    static get hasIssueNumber(): boolean;
+    static repo(): Repo;
+    static issueNumber(): number | undefined;
+    static hasIssueNumber(): boolean;
 }

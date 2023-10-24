@@ -49,10 +49,10 @@ class Commenter {
     constructor(octokit, commentName, issueNumber, repo) {
         this.octokit = octokit;
         this.commentName = commentName;
-        issueNumber || (issueNumber = Commenter.issueNumber);
+        issueNumber || (issueNumber = Commenter.issueNumber());
         (0, assert_1.default)(issueNumber);
         this.issueNumber = issueNumber;
-        this.repo = repo || Commenter.repo;
+        this.repo = repo || Commenter.repo();
     }
     commentExists() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -100,17 +100,17 @@ class Commenter {
     static commentTagPattern(commentName) {
         return `<!-- "${commentName}" -->`;
     }
-    static get repo() {
+    static repo() {
         const { context } = github;
         return context.repo;
     }
-    static get issueNumber() {
+    static issueNumber() {
         var _a, _b;
         const { context } = github;
         return ((_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number) || ((_b = context.payload.issue) === null || _b === void 0 ? void 0 : _b.number);
     }
-    static get hasIssueNumber() {
-        return !!Commenter.issueNumber;
+    static hasIssueNumber() {
+        return !!Commenter.issueNumber();
     }
 }
 exports.default = Commenter;

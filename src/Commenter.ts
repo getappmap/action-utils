@@ -21,10 +21,10 @@ export default class Commenter {
     issueNumber?: number,
     repo?: Repo
   ) {
-    issueNumber ||= Commenter.issueNumber;
+    issueNumber ||= Commenter.issueNumber();
     assert(issueNumber);
     this.issueNumber = issueNumber;
-    this.repo = repo || Commenter.repo;
+    this.repo = repo || Commenter.repo();
   }
 
   public async commentExists(): Promise<boolean> {
@@ -78,17 +78,17 @@ export default class Commenter {
     return `<!-- "${commentName}" -->`;
   }
 
-  static get repo(): Repo {
+  static repo(): Repo {
     const {context} = github;
     return context.repo;
   }
 
-  static get issueNumber(): number | undefined {
+  static issueNumber(): number | undefined {
     const {context} = github;
     return context.payload.pull_request?.number || context.payload.issue?.number;
   }
 
-  static get hasIssueNumber(): boolean {
-    return !!Commenter.issueNumber;
+  static hasIssueNumber(): boolean {
+    return !!Commenter.issueNumber();
   }
 }
