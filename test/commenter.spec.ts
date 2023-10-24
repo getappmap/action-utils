@@ -5,19 +5,22 @@ import * as github from '@actions/github';
 import {Octokit} from '@octokit/rest';
 import path from 'path';
 
-import Commenter from '../src/Commenter';
+import Commenter, {Repo} from '../src/Commenter';
 
 export const dataDir = path.join(__dirname, 'fixture', 'commenter');
 export const reportPath = path.join(dataDir, 'report.md');
 
+const ISSUE_NUMBER = 1;
+const REPO: Repo = {owner: 'appmap', repo: 'getappmap.com'};
+
 const mockGithubContext = {
   payload: {
     pull_request: {
-      number: 1,
+      number: ISSUE_NUMBER,
     },
   },
 
-  repo: {},
+  repo: REPO,
 };
 
 const mockOctokit = {
@@ -47,23 +50,32 @@ describe('Commenter', () => {
     sandbox = sinon.createSandbox();
     octokit = mockOctokit as any;
     sandbox.stub(github, 'context').value(mockGithubContext);
-    commenter = new Commenter(octokit, 'appmap', reportPath);
+    commenter = new Commenter(octokit, 'appmap');
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
+  it('auto-populates issueNumber', () => {
+    expect(commenter.issueNumber).toEqual(ISSUE_NUMBER);
+  });
+
+  it('auto-populates repo', () => {
+    expect(commenter.repo).toEqual(REPO);
+  });
+
   it('creates a new comment if one does not exist', async () => {
     const createCommentSpy = sandbox.spy(mockOctokit.rest.issues, 'createComment');
 
     sandbox.stub(commenter, 'getAppMapComment').resolves();
-    await commenter.comment();
+    await commenter.comment(reportPath);
 
     const expectedArgs = [
       {
         body: expectedBody,
         issue_number: mockGithubContext.payload.pull_request.number,
+        ...REPO,
       },
     ];
 
@@ -80,12 +92,13 @@ describe('Commenter', () => {
     };
 
     sandbox.stub(commenter, 'getAppMapComment').resolves(fakeComment);
-    await commenter.comment();
+    await commenter.comment(reportPath);
 
     const expectedArgs = [
       {
         body: expectedBody,
         comment_id: fakeComment.id,
+        ...REPO,
       },
     ];
 
