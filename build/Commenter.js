@@ -46,46 +46,39 @@ const github = __importStar(require("@actions/github"));
 const assert_1 = __importDefault(require("assert"));
 const fs_1 = __importDefault(require("fs"));
 class Commenter {
-    constructor(octokit, commentName, commentFile) {
+    constructor(octokit, commentName, issueNumber, repo) {
         this.octokit = octokit;
         this.commentName = commentName;
-        this.commentFile = commentFile;
+        issueNumber || (issueNumber = Commenter.issueNumber());
+        (0, assert_1.default)(issueNumber);
+        this.issueNumber = issueNumber;
+        this.repo = repo || Commenter.repo();
     }
-    static commentTagPattern(commentName) {
-        return `<!-- "${commentName}" -->`;
-    }
-    static get issueNumber() {
-        var _a, _b;
-        const { context } = github;
-        return ((_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number) || ((_b = context.payload.issue) === null || _b === void 0 ? void 0 : _b.number);
-    }
-    static get hasIssueNumber() {
-        return !!Commenter.issueNumber;
-    }
-    comment() {
+    commentExists() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, assert_1.default)(Commenter.hasIssueNumber);
-            const { context } = github;
-            const issueNumber = Commenter.issueNumber;
-            (0, assert_1.default)(issueNumber);
-            const content = fs_1.default.readFileSync(this.commentFile, 'utf8');
+            const comment = yield this.getAppMapComment();
+            return !!comment;
+        });
+    }
+    comment(commentFile) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const content = fs_1.default.readFileSync(commentFile, 'utf8');
             const body = `${content}\n${Commenter.commentTagPattern(this.commentName)}`;
-            const comment = yield this.getAppMapComment(issueNumber);
+            const comment = yield this.getAppMapComment();
             if (comment) {
-                yield this.octokit.rest.issues.updateComment(Object.assign(Object.assign({}, context.repo), { comment_id: comment.id, body }));
+                yield this.octokit.rest.issues.updateComment(Object.assign(Object.assign({}, this.repo), { comment_id: comment.id, body }));
             }
             else {
-                yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: issueNumber, body }));
+                yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, this.repo), { issue_number: this.issueNumber, body }));
             }
         });
     }
-    getAppMapComment(issueNumber) {
+    getAppMapComment() {
         var _a, e_1, _b, _c;
         return __awaiter(this, void 0, void 0, function* () {
-            const { context } = github;
             let comment;
             try {
-                for (var _d = true, _e = __asyncValues(this.octokit.paginate.iterator(this.octokit.rest.issues.listComments, Object.assign(Object.assign({}, context.repo), { issue_number: issueNumber }))), _f; _f = yield _e.next(), _a = _f.done, !_a; _d = true) {
+                for (var _d = true, _e = __asyncValues(this.octokit.paginate.iterator(this.octokit.rest.issues.listComments, Object.assign(Object.assign({}, this.repo), { issue_number: this.issueNumber }))), _f; _f = yield _e.next(), _a = _f.done, !_a; _d = true) {
                     _c = _f.value;
                     _d = false;
                     const { data: comments } = _c;
@@ -103,6 +96,21 @@ class Commenter {
             }
             return comment;
         });
+    }
+    static commentTagPattern(commentName) {
+        return `<!-- "${commentName}" -->`;
+    }
+    static repo() {
+        const { context } = github;
+        return context.repo;
+    }
+    static issueNumber() {
+        var _a, _b;
+        const { context } = github;
+        return ((_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number) || ((_b = context.payload.issue) === null || _b === void 0 ? void 0 : _b.number);
+    }
+    static hasIssueNumber() {
+        return !!Commenter.issueNumber();
     }
 }
 exports.default = Commenter;

@@ -7,3 +7,6 @@ export * from './waitFor';
 export {default as installAppMapTools, InstallAppMapToolsOptions} from './installAppMapTools';
 export {default as downloadFile} from './downloadFile';
 export {default as Commenter, Comment} from './Commenter';
+export {default as ArtifactStore, uploadArtifact} from './ArtifactStore';
+export {default as GitHubArtifactStore} from './GitHubArtifactStore';
+export {default as DirectoryArtifactStore} from './DirectoryArtifactStore';

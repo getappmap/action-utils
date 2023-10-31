@@ -9,56 +9,50 @@ export type Comment = {
   id: number;
 };
 
+export type Repo = {owner: string; repo: string};
+
 export default class Commenter {
+  public readonly issueNumber: number;
+  public readonly repo: Repo;
+
   constructor(
     private readonly octokit: Octokit,
     public readonly commentName: string,
-    public readonly commentFile: string
-  ) {}
-
-  static commentTagPattern(commentName: string): string {
-    return `<!-- "${commentName}" -->`;
-  }
-
-  static get issueNumber(): number | undefined {
-    const {context} = github;
-    return context.payload.pull_request?.number || context.payload.issue?.number;
-  }
-
-  static get hasIssueNumber(): boolean {
-    return !!Commenter.issueNumber;
-  }
-
-  public async comment() {
-    assert(Commenter.hasIssueNumber);
-
-    const {context} = github;
-
-    const issueNumber = Commenter.issueNumber;
+    issueNumber?: number,
+    repo?: Repo
+  ) {
+    issueNumber ||= Commenter.issueNumber();
     assert(issueNumber);
+    this.issueNumber = issueNumber;
+    this.repo = repo || Commenter.repo();
+  }
 
-    const content = fs.readFileSync(this.commentFile, 'utf8');
+  public async commentExists(): Promise<boolean> {
+    const comment = await this.getAppMapComment();
+    return !!comment;
+  }
+
+  public async comment(commentFile: string) {
+    const content = fs.readFileSync(commentFile, 'utf8');
     const body = `${content}\n${Commenter.commentTagPattern(this.commentName)}`;
-    const comment = await this.getAppMapComment(issueNumber);
+    const comment = await this.getAppMapComment();
 
     if (comment) {
       await this.octokit.rest.issues.updateComment({
-        ...context.repo,
+        ...this.repo,
         comment_id: comment.id,
         body,
       });
     } else {
       await this.octokit.rest.issues.createComment({
-        ...context.repo,
-        issue_number: issueNumber,
+        ...this.repo,
+        issue_number: this.issueNumber,
         body,
       });
     }
   }
 
-  public async getAppMapComment(issueNumber: number): Promise<Comment | undefined> {
-    const {context} = github;
-
+  public async getAppMapComment(): Promise<Comment | undefined> {
     type ListCommentsResponseDataType = GetResponseDataTypeFromEndpointMethod<
       typeof this.octokit.rest.issues.listComments
     >;
@@ -67,8 +61,8 @@ export default class Commenter {
     for await (const {data: comments} of this.octokit.paginate.iterator(
       this.octokit.rest.issues.listComments,
       {
-        ...context.repo,
-        issue_number: issueNumber,
+        ...this.repo,
+        issue_number: this.issueNumber,
       }
     )) {
       comment = comments.find(comment =>
@@ -78,5 +72,23 @@ export default class Commenter {
     }
 
     return comment;
+  }
+
+  static commentTagPattern(commentName: string): string {
+    return `<!-- "${commentName}" -->`;
+  }
+
+  static repo(): Repo {
+    const {context} = github;
+    return context.repo;
+  }
+
+  static issueNumber(): number | undefined {
+    const {context} = github;
+    return context.payload.pull_request?.number || context.payload.issue?.number;
+  }
+
+  static hasIssueNumber(): boolean {
+    return !!Commenter.issueNumber();
   }
 }
